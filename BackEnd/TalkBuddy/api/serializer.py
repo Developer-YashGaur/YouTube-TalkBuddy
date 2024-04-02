@@ -14,11 +14,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
+    first_name = serializers.CharField(write_only=True, required=True)
+    last_name = serializers.CharField(write_only=True, required=True)
     mobileNumber = serializers.CharField(required=True, validators=[UniqueValidator(queryset=User.objects.all())])
 
     class Meta:
         model = User
-        fields = ('mobileNumber', 'password', 'password2')
+        fields = ('mobileNumber', 'password', 'password2', 'first_name', 'last_name')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -30,6 +32,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create(
             mobileNumber = validated_data['mobileNumber'],
+            first_name = validated_data['first_name'],
+            last_name = validated_data['last_name']
         )
 
         user.set_password(validated_data['password'])

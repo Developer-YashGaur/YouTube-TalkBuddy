@@ -27,7 +27,12 @@ class CustomUserManager(UserManager):
 
 class User(AbstractUser):
     mobileNumber = PhoneNumberField(null=False, blank=False, unique=True)
+    username = models.CharField(unique=False, blank=True)
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
     verified = models.BooleanField(default=False)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
     USERNAME_FIELD = 'mobileNumber'
     REQUIRED_FIELDS = []
 
@@ -39,18 +44,21 @@ class User(AbstractUser):
     def profile(self):
         profile = profile.objects.get(user=self)
 
+    def fullName(self):
+        return f"{self.first_name} {self.last_name}"
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    firstName = models.CharField(max_length=100)
-    lastName = models.CharField(max_length=100)
-    bio = models.CharField(max_length=250)
-    image = models.ImageField(upload_to="user_images", default="default.jpg")
-    email = models.EmailField()
+    createdAt = models.DateTimeField(auto_now_add=True)
+    updatedAt = models.DateTimeField(auto_now=True)
+    bio = models.CharField(max_length=250, blank=True)
+    image = models.ImageField(upload_to="user_images", default="default.jpg", blank=True)
+    email = models.EmailField( blank=True)
     emailVerified = models.BooleanField(default=False)
-    fullName = models.CharField(max_length=300)
+    # fullName = models.CharField(max_length=300, blank=True)
 
-    def fullName(self):
-        return f"{self.firstName} {self.lastName}"
+    def __str__(self):
+        return str(self.user.mobileNumber)
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:

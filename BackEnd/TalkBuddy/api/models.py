@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 from phonenumber_field.modelfields import PhoneNumberField
 from django.db.models.signals import post_save
+from django.utils import timezone
 
 
 # Create your models here.
@@ -33,6 +34,8 @@ class User(AbstractUser):
     verified = models.BooleanField(default=False)
     first_name = models.CharField(max_length=100, blank=True)
     last_name = models.CharField(max_length=100, blank=True)
+    otp = models.CharField(max_length=6, null=True, blank=True)
+    otpGenerationTime = models.DateTimeField(blank=True)
     USERNAME_FIELD = 'mobileNumber'
     REQUIRED_FIELDS = []
 

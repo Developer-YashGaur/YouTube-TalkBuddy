@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:talk_buddy/screens/dashboard.dart';
 import 'package:talk_buddy/screens/signup_screen.dart';
 import 'package:talk_buddy/theme/theme.dart';
 import 'package:talk_buddy/widgets/custom_scaffold.dart';
 import 'package:icons_plus/icons_plus.dart';
+import 'package:talk_buddy/api_services/authentication.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +17,10 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formSignInKey = GlobalKey<FormState>();
   bool rememberPassword = true;
+  String mobileNumber = '';
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
@@ -53,16 +60,30 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(
                         height: 40.0,
                       ),
-                      TextFormField(
+                      // TextFormField(
+                      //   validator: (value) {
+                      //     if (value == null || value.isEmpty) {
+                      //       return 'Please enter Email';
+                      //     }
+                      //     return null;
+                      //   },
+
+                      IntlPhoneField(
+                        initialCountryCode: 'IN',
+                        
+                        controller: _phoneController,
                         validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter Email';
+                          if (value == null) {
+                            return 'Please enter Mobile Number';
                           }
                           return null;
                         },
+                        onChanged: (phone) {
+                          mobileNumber = phone.completeNumber;
+                        },
                         decoration: InputDecoration(
-                          label: const Text('Email'),
-                          hintText: 'Enter Email',
+                          label: const Text('Mobile Number'),
+                          hintText: 'Enter Mobile Number',
                           hintStyle: const TextStyle(
                             color: Colors.black26,
                           ),
@@ -86,6 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextFormField(
                         obscureText: true,
                         obscuringCharacter: '*',
+                        controller: _passwordController,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter Password';
@@ -154,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formSignInKey.currentState!.validate() &&
                                 rememberPassword) {
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -162,6 +184,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                   content: Text('Processing Data'),
                                 ),
                               );
+                              // debugPrint(mobileNumber);
+                              var token = await loginUser(mobileNumber: mobileNumber, password: _passwordController.text);
+                              // debugPrint(token);
+                              _phoneController.clear();
+                              _passwordController.clear();
+                              // ignore: use_build_context_synchronously
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => UserDashboard(token: token)));
                             } else if (!rememberPassword) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -170,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               );
                             }
                           },
-                          child: const Text('Sign up'),
+                          child: const Text('Sign In'),
                         ),
                       ),
                       const SizedBox(

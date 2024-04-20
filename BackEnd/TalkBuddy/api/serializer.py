@@ -6,13 +6,24 @@ from .models import User
 from phonenumber_field.phonenumber import PhoneNumber
 from .utils import generate_otp, send_otp_phone
 from django.utils import timezone
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
-        token = super().get_token(user)
-        return token
+        try:
+            userRow = User.objects.get(id=user.id)
+            if userRow.verified == True:
+                token = super().get_token(user)
+                return token
+            else:
+                raise AuthenticationFailed("User is not verified.")
+             
+        except User.DoesNotExist:
+            raise AuthenticationFailed("User not found.")
     
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
